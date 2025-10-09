@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Basket", "Basket", "{89E410
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ordering", "Ordering", "{8CA4254D-F546-4143-8B54-1ADDAC4D9C64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catolog", "Modules\Catalog\Catolog\Catolog.csproj", "{CAED20BD-B82E-47AE-85B4-7F98AB7DD0E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog", "Modules\Catalog\Catolog\Catalog.csproj", "{CAED20BD-B82E-47AE-85B4-7F98AB7DD0E2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basket", "Modules\Basket\Basket\Basket.csproj", "{834A900A-7C06-403F-A198-DB458905A46D}"
 EndProject
