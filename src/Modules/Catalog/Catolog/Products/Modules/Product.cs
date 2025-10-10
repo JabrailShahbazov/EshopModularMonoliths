@@ -1,8 +1,6 @@
-﻿using Shared.DDD.Domain.Entities;
+﻿namespace Catalog.Products.Modules;
 
-namespace Catalog.Products.Modules;
-
-public class Product : Entity<Guid>
+public class Product : Aggregate<Guid>
 {
     public string Name { get; private set; } = null!;
 
@@ -34,6 +32,8 @@ public class Product : Entity<Guid>
             Category = category
         };
 
+        product.AddDomainEvent( new ProductCreatedEvent(product));
+        
         return product;
     }
     
@@ -51,5 +51,10 @@ public class Product : Entity<Guid>
         Price = price;
         ImageFile = imageFile;
         Category = category;
+
+        if (Price != price)
+        {
+            AddDomainEvent(new ProductPriceChangedEvent(this));
+        }
     }
 }
