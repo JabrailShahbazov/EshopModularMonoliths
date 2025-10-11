@@ -20,7 +20,7 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private void UpdateEntities(DbContext? eventDataContext)
+    private static void UpdateEntities(DbContext? eventDataContext)
     {
         if (eventDataContext == null) return;
 
