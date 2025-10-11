@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,15 +10,18 @@ public static class CatalogModule
     public static IServiceCollection AddCatalogModule(this IServiceCollection services, 
                                                       IConfiguration configuration)
     {
+        
+        services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        
+        services.AddCatalogServices();
+        
         var connectionString = configuration.GetConnectionString("Database");
 
-        services.AddDbContext<CatalogDbContext>(options =>
+        services.AddDbContext<CatalogDbContext>((sr,options) =>
         {
-            options.AddInterceptors(new AuditableEntityInterceptor());
+            options.AddInterceptors(sr.GetServices<ISaveChangesInterceptor>());
             options.UseNpgsql(connectionString);
         });
-        
-        services.AddScoped<IDataSeeder, CatalogDataSeeder>();
         
         return services;
     }
