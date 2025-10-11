@@ -10,6 +10,7 @@ public static class MigrationExtensions
     public static IApplicationBuilder UseMigration<TContext>(this IApplicationBuilder app) where TContext : DbContext
     {
         MigrateDatabaseAsync<TContext>(app.ApplicationServices).GetAwaiter().GetResult();
+        
         SeedDataAsync(app.ApplicationServices).GetAwaiter().GetResult();
         
         return app;

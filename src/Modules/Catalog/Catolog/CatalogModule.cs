@@ -13,6 +13,7 @@ public static class CatalogModule
 
         services.AddDbContext<CatalogDbContext>(options =>
         {
+            options.AddInterceptors(new AuditableEntityInterceptor());
             options.UseNpgsql(connectionString);
         });
         
