@@ -6,7 +6,7 @@ public record GetProductsResul(IEnumerable<ProductDto> Products);
 
 public class GetProductsHandler(CatalogDbContext dbContext) :IQueryHandle<GetProductsQuery, GetProductsResul>
 {
-    public async Task<GetProductsResul> Handle(GetProductsQuery command, CancellationToken cancellationToken)
+    public async Task<GetProductsResul> Handle(GetProductsQuery query, CancellationToken cancellationToken)
     {
         var products =await dbContext.Products
                                 .AsNoTracking()
