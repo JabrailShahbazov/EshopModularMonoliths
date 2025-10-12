@@ -32,7 +32,7 @@ public class Product : Aggregate<Guid>
             Category = category
         };
 
-        product.AddDomainEvent( new ProductCreatedEvent(product));
+        product.AddDomainEvent(new ProductCreatedEvent(product));
         
         return product;
     }
