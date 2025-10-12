@@ -12,26 +12,15 @@ public class GetProductsHandler(CatalogDbContext dbContext) :IQueryHandle<GetPro
                                 .AsNoTracking()
                                 .OrderBy(p => p.Name)
                                 .ToListAsync(cancellationToken);
+        
+        // var productDtos = await dbContext.Products
+        //     .AsNoTracking()
+        //     .OrderBy(p => p.Name)
+        //     .ProjectToType<ProductDto>() // Mapster-in EF üçün extension-u
+        //     .ToListAsync(cancellationToken);
 
-        var productDtos = ProductToProductDto(products);
+        var productDtos = products.Adapt<List<ProductDto>>();
         
         return new GetProductsResul(productDtos);
-    }
-
-    private List<ProductDto> ProductToProductDto(List<Product> products)
-    {
-        // var productDtos = products.Select(p => new ProductDto
-        // {
-        //     Id = p.Id,
-        //     Name = p.Name,
-        //     Description = p.Description,
-        //     Price = p.Price,
-        //     CreatedAt = p.CreatedAt,
-        //     UpdatedAt = p.UpdatedAt
-        // }).ToList();
-        //
-        // return productDtos;
-        
-        throw new NotImplementedException();
     }
 }
