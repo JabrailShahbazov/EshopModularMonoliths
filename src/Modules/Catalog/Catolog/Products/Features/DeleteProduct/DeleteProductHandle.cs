@@ -2,7 +2,7 @@
 
 public record DeleteProductCommand(Guid ProductId) : ICommand<DeleteProductResult>;
 
-public record DeleteProductResult(bool Success);
+public record DeleteProductResult(bool IsSuccess);
 
 public class DeleteProductHandle(CatalogDbContext dbContext) :ICommandHandler<DeleteProductCommand, DeleteProductResult>
 {
