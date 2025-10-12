@@ -13,3 +13,4 @@ global using Shared.Data.Interceptors;
 global using Shared.CQRS;
 global using Catalog.Products.Dtos;
 global using Mapster;
+global using MediatR;
