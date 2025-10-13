@@ -12,6 +12,8 @@ public static class CatalogModule
     {
         
         services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         
         services.AddCatalogServices();
         
