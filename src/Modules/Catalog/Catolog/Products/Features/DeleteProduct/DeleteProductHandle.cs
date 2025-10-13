@@ -4,6 +4,14 @@ public record DeleteProductCommand(Guid ProductId) : ICommand<DeleteProductResul
 
 public record DeleteProductResult(bool IsSuccess);
 
+public class DeleteProductCommandValidator : AbstractValidator<DeleteProductCommand>
+{
+    public DeleteProductCommandValidator()
+    {
+        RuleFor(x => x.ProductId).NotEmpty().WithMessage("ProductId is required.");
+    }
+}
+
 public class DeleteProductHandle(CatalogDbContext dbContext) :ICommandHandler<DeleteProductCommand, DeleteProductResult>
 {
     public async Task<DeleteProductResult> Handle(DeleteProductCommand command, CancellationToken cancellationToken)
