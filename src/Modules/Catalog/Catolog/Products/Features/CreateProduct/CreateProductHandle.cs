@@ -18,13 +18,10 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
     }
 }
 
-public class CreateProductHandle(CatalogDbContext dbContext, 
-                                 ILogger<CreateProductHandle> logger) : ICommandHandler<CreateProductCommand, CreateProductResult>
+public class CreateProductHandle(CatalogDbContext dbContext) : ICommandHandler<CreateProductCommand, CreateProductResult>
 {
     public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
-        logger.LogInformation("CreateProductCommandHandle handle called with {@command}", command);
-        
         var product = CreateNewProduct(command.Product);
         
         dbContext.Products.Add(product);
