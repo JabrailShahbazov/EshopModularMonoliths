@@ -1,11 +1,13 @@
-﻿namespace Basket;
+﻿using Shared.Data;
+
+namespace Basket;
 
 public static class BasketModule
 {
     public static IServiceCollection AddBasketModule(this IServiceCollection services, IConfiguration configuration)
     {
         
-        services.AddBasketModule(configuration);
+        services.AddBasketServices();
         
         var connectionString = configuration.GetConnectionString("Database");
 
@@ -20,6 +22,8 @@ public static class BasketModule
     
     public static IApplicationBuilder UseBasketModule(this IApplicationBuilder app)
     {
+        app.UseMigration<BasketDbContext>();
+        
         return app;
     }
 }
