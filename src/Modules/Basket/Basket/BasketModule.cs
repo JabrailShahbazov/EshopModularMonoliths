@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Basket;
+﻿namespace Basket;
 
 public static class BasketModule
 {
@@ -10,6 +6,15 @@ public static class BasketModule
     {
         
         services.AddBasketModule(configuration);
+        
+        var connectionString = configuration.GetConnectionString("Database");
+
+        services.AddDbContext<BasketDbContext>((sr,options) =>
+        {
+            options.AddInterceptors(sr.GetServices<ISaveChangesInterceptor>());
+            options.UseNpgsql(connectionString);
+        });
+        
         return services;
     }
     
