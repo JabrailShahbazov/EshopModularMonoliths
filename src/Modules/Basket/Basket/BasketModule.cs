@@ -8,6 +8,8 @@ public static class BasketModule
 {
     public static IServiceCollection AddBasketModule(this IServiceCollection services, IConfiguration configuration)
     {
+        
+        services.AddBasketModule(configuration);
         return services;
     }
     
