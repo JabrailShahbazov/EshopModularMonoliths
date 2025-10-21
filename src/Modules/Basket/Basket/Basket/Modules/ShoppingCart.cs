@@ -4,9 +4,9 @@ namespace Basket.Basket.Modules;
 
 public class ShoppingCart : Aggregate<Guid>
 {
-    public string UserName { get; private set; } = default!;
-
     private readonly List<ShoppingCartItem> _items = [];
+    
+    public string UserName { get; private set; } = default!;
 
     public IReadOnlyList<ShoppingCartItem> Items => _items.AsReadOnly();
     
