@@ -5,7 +5,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, config) =>
     config.ReadFrom.Configuration(context.Configuration));
 
-builder.Services.AddCarterWIthAssemblies(typeof(CatalogModule).Assembly);
+var catalogAssembly = typeof(CatalogModule).Assembly;
+var basketAssembly = typeof(BasketModule).Assembly;
+
+builder.Services.AddCarterWIthAssemblies(catalogAssembly,basketAssembly);
+
+builder.Services.AddMediatRWIthAssemblies(catalogAssembly,basketAssembly);
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
