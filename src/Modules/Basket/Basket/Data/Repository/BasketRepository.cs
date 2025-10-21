@@ -20,7 +20,7 @@ public class BasketRepository(BasketDbContext dbContext) : IBasketRepository
     {
         dbContext.ShoppingCarts.Add(basket);
 
-        await SaveChangesAsync(cancellationToken);
+        await  dbContext.SaveChangesAsync(cancellationToken);
 
         return basket;
     }
@@ -31,12 +31,12 @@ public class BasketRepository(BasketDbContext dbContext) : IBasketRepository
 
         dbContext.ShoppingCarts.Remove(basket);
 
-        var result = await SaveChangesAsync(cancellationToken);
+        var result = await  dbContext.SaveChangesAsync(cancellationToken);
 
         return result > 0;
     }
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<int> SaveChangesAsync(string? userName = null, CancellationToken cancellationToken = default)
     {
         return await dbContext.SaveChangesAsync(cancellationToken);
     }
