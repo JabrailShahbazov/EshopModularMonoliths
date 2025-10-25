@@ -1,5 +1,3 @@
-using Serilog;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, config) =>
@@ -11,6 +9,8 @@ var basketAssembly = typeof(BasketModule).Assembly;
 builder.Services.AddCarterWIthAssemblies(catalogAssembly,basketAssembly);
 
 builder.Services.AddMediatRWIthAssemblies(catalogAssembly,basketAssembly);
+
+builder.Services.AddMassTransitWithAssemblies(catalogAssembly,basketAssembly);
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
