@@ -3,6 +3,9 @@ version: '3.4'
 services:
   eshopdb:
     image: postgres
+  
+  distrubutedcache:
+    image: redis
     
   seq:
     image: datalust/seq:latest

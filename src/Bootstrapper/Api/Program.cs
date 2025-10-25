@@ -12,6 +12,11 @@ builder.Services.AddCarterWIthAssemblies(catalogAssembly,basketAssembly);
 
 builder.Services.AddMediatRWIthAssemblies(catalogAssembly,basketAssembly);
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 // Add Swagger/OpenAPI
