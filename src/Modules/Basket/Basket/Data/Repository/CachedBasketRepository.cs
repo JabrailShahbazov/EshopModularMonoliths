@@ -1,10 +1,19 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Basket.Data.JsonConverters;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Basket.Data.Repository;
 
 public class CachedBasketRepository(IBasketRepository basketRepository, IDistributedCache cache) : IBasketRepository
 {
+    private readonly JsonSerializerOptions _options = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new ShoppingCartConverter(), new ShoppingCartItemConverter() }
+    };
+    
     public async Task<ShoppingCart> GetBasketAsync(string userName, bool asNoTracking = true, CancellationToken cancellationToken = default)
     {
         if (!asNoTracking)
@@ -16,7 +25,7 @@ public class CachedBasketRepository(IBasketRepository basketRepository, IDistrib
 
         if (!string.IsNullOrEmpty(cachedBasket))
         {
-            var deserialize = JsonSerializer.Deserialize<ShoppingCart>(cachedBasket);
+            var deserialize = JsonSerializer.Deserialize<ShoppingCart>(cachedBasket, _options);
 
             if (deserialize is not null)
             {
@@ -26,7 +35,7 @@ public class CachedBasketRepository(IBasketRepository basketRepository, IDistrib
 
         var basket = await basketRepository.GetBasketAsync(userName, asNoTracking, cancellationToken);
 
-        await cache.SetStringAsync(userName, JsonSerializer.Serialize(basket), cancellationToken);
+        await cache.SetStringAsync(userName, JsonSerializer.Serialize(basket, _options), cancellationToken);
 
         return basket;
     }
@@ -35,7 +44,7 @@ public class CachedBasketRepository(IBasketRepository basketRepository, IDistrib
     {
         await basketRepository.CreateBasketAsync(basket, cancellationToken);
 
-        await cache.SetStringAsync(basket.UserName, JsonSerializer.Serialize(basket), cancellationToken);
+        await cache.SetStringAsync(basket.UserName, JsonSerializer.Serialize(basket, _options), cancellationToken);
 
         return basket;
     }
