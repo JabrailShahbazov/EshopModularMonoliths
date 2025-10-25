@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Carter;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Behaviors;
