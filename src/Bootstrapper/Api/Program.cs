@@ -1,7 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((context, config) =>
-    config.ReadFrom.Configuration(context.Configuration));
+builder.Services.AddSwaggerDocumentation(builder.Environment);
+
+builder.Host.UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration));
 
 var catalogAssembly = typeof(CatalogModule).Assembly;
 var basketAssembly = typeof(BasketModule).Assembly;
@@ -19,31 +20,13 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
-// Add Swagger/OpenAPI
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "EShop Modular Monoliths API",
-        Version = "v1",
-        Description = "Modular Monolith API with Catalog, Basket, and Ordering modules"
-    });
-});
-
 builder.Services.AddCatalogModule(builder.Configuration)
                 .AddBasketModule(builder.Configuration)
                 .AddOrderingModule(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "EShop API v1");
-    options.RoutePrefix = string.Empty; // Set Swagger UI at the app's root (http://localhost:<port>/)
-});
+app.UseSwaggerDocumentation();
 
 app.MapCarter();
 app.UseSerilogRequestLogging();
