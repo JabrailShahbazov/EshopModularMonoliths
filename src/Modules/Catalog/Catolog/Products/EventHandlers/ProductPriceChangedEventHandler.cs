@@ -1,13 +1,26 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MassTransit;
+using Microsoft.Extensions.Logging;
+using Shared.Messaging.Events;
 
 namespace Catalog.Products.EventHandlers;
 
-public class ProductPriceChangedEventHandler(ILogger<ProductPriceChangedEventHandler> logger) :INotificationHandler<ProductPriceChangedEvent>
+public class ProductPriceChangedEventHandler(IBus bus, ILogger<ProductPriceChangedEventHandler> logger)
+    : INotificationHandler<ProductPriceChangedEvent>
 {
-    public Task Handle(ProductPriceChangedEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(ProductPriceChangedEvent notification, CancellationToken cancellationToken)
     {
         logger.LogInformation("Domain Event handled: {DomainEvent}", notification.GetType().Name);
+
+        var integrationEvent = new ProductPriceChangeIntegrationEvent()
+        {
+            ProductId = notification.Product.Id,
+            Name = notification.Product.Name,
+            Category = notification.Product.Category,
+            Description = notification.Product.Description,
+            ImageFile = notification.Product.ImageFile,
+            Price = notification.Product.Price
+        };
         
-        return Task.CompletedTask;
+        await bus.Publish(integrationEvent,cancellationToken);
     }
 }
