@@ -17,6 +17,10 @@ builder.Services.AddStackExchangeRedisCache(options => { options.Configuration =
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
+builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
+builder.Services.AddAuthorization();
+
+
 builder.Services.AddCatalogModule(builder.Configuration)
     .AddBasketModule(builder.Configuration)
     .AddOrderingModule(builder.Configuration);
@@ -28,6 +32,8 @@ app.UseSwaggerDocumentation();
 app.MapCarter();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler(options => { });
+app.UseAuthentication();
+app.UseAuthorization();
 
 //module services: catalog, basket, ordering
 app.UseCatalogModule()

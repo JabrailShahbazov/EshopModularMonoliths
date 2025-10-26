@@ -7,3 +7,4 @@ global using Shared.Extensions;
 global using Shared.Exceptions.Handler;
 global using Serilog;
 global using Shared.Messaging.Excentions;
+global using Keycloak.AuthServices.Authentication;

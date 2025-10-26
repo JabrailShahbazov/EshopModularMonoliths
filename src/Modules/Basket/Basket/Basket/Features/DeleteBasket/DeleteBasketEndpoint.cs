@@ -18,6 +18,7 @@ public class DeleteBasketEndpoint :ICarterModule
         .WithSummary("Deletes a basket for a given buyer userName.")
         .WithDescription("Deletes the shopping basket associated with the specified buyer userName from the system.")
         .Produces<DeleteBasketResponse>()
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
     }
 }

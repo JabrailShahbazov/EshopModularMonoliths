@@ -20,6 +20,7 @@ public class RemoveItemFromBasketEndpoint : ICarterModule
             }).Produces<RemoveItemFromBasketResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Remove item from user's basket")
-            .WithDescription("Removes an item from the specified user's shopping basket.");
+            .WithDescription("Removes an item from the specified user's shopping basket.")
+            .RequireAuthorization();
     }
 }
