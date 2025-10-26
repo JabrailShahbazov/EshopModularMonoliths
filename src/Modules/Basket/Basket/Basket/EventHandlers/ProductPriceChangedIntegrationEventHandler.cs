@@ -12,6 +12,7 @@ public class ProductPriceChangedIntegrationEventHandler(
 {
     public async Task Consume(ConsumeContext<ProductPriceChangeIntegrationEvent> context)
     {
+        //TODO: remove cache for basket if any caching is implemented
         logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
 
         var result = await sender.Send(new UpdateItemPriceInBasketCommand(context.Message.ProductId, context.Message.Price));
