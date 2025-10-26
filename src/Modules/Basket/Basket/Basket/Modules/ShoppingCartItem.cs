@@ -41,6 +41,7 @@ public class ShoppingCartItem : Entity<Guid>
     public void UpdatePrice(decimal newPrice)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(newPrice);
+        
         Price = newPrice;
     }
 }
