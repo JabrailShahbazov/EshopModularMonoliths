@@ -1,4 +1,6 @@
-﻿namespace Basket.Basket.Features.UpdateItemPriceInBasket;
+﻿using Microsoft.Extensions.Caching.Distributed;
+
+namespace Basket.Basket.Features.UpdateItemPriceInBasket;
 
 public record UpdateItemPriceInBasketCommand(Guid ProductId, decimal Price) : ICommand<UpdateItemPriceInBasketResult>;
 
@@ -13,7 +15,8 @@ public class UpdateItemPriceInBasketCommandValidator : AbstractValidator<UpdateI
     }
 }
 
-public class UpdateItemPiceInBasketHandler(BasketDbContext dbContext) : ICommandHandler<UpdateItemPriceInBasketCommand, UpdateItemPriceInBasketResult>
+public class UpdateItemPiceInBasketHandler(BasketDbContext dbContext, IDistributedCache cache)
+    : ICommandHandler<UpdateItemPriceInBasketCommand, UpdateItemPriceInBasketResult>
 {
     public async Task<UpdateItemPriceInBasketResult> Handle(UpdateItemPriceInBasketCommand command, CancellationToken cancellationToken)
     {
@@ -35,9 +38,27 @@ public class UpdateItemPiceInBasketHandler(BasketDbContext dbContext) : ICommand
 
         if (result > 0)
         {
+            await RemoveShippingCartCacheItems(itemToUpdate, dbContext, cancellationToken);
+
             return new UpdateItemPriceInBasketResult(true);
         }
 
         return new UpdateItemPriceInBasketResult(false);
+    }
+
+    private async Task RemoveShippingCartCacheItems(List<ShoppingCartItem> itemToUpdate, 
+                                                    BasketDbContext basketDbContext,
+                                                    CancellationToken cancellationToken)
+    {
+        var shoppingCartIds = itemToUpdate.Select(x => x.ShoppingCartId).Distinct();
+
+        var shoppingCarts = await basketDbContext.ShoppingCarts
+            .Where(x => shoppingCartIds.Contains(x.Id))
+            .ToListAsync(cancellationToken);
+
+        foreach (var cart in shoppingCarts)
+        {
+            await cache.RemoveAsync(cart.UserName, cancellationToken);
+        }
     }
 }
