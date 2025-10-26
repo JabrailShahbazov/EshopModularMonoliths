@@ -1,4 +1,5 @@
-﻿using Shared.Data;
+﻿using Basket.Data.Processors;
+using Shared.Data;
 
 namespace Basket;
 
@@ -16,6 +17,8 @@ public static class BasketModule
             options.AddInterceptors(sr.GetServices<ISaveChangesInterceptor>());
             options.UseNpgsql(connectionString);
         });
+
+        services.AddHostedService<OutboxProcessor>();
         
         return services;
     }
