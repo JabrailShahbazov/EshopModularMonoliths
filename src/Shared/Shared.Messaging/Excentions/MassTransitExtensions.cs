@@ -1,28 +1,37 @@
 ﻿using System.Reflection;
 using MassTransit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Shared.Messaging.Excentions;
 
 public static class MassTransitExtensions
 {
-    public static IServiceCollection AddMassTransitWithAssemblies(this IServiceCollection services, params Assembly[] assemblies)
+    public static IServiceCollection AddMassTransitWithAssemblies(this IServiceCollection services,
+                                                                 IConfiguration configuration,
+                                                                 params Assembly[] assemblies)
     {
-        services.AddMassTransit(configure =>
+        services.AddMassTransit(config =>
         {
-            configure.SetKebabCaseEndpointNameFormatter();
+            config.SetKebabCaseEndpointNameFormatter();
 
-            configure.SetInMemorySagaRepositoryProvider();
+            config.SetInMemorySagaRepositoryProvider();
 
-            configure.AddConsumers(assemblies);
-            configure.AddSagaStateMachines(assemblies);
-            configure.AddSagas(assemblies);
-            configure.AddActivities(assemblies);
-
-            configure.UsingInMemory((context, configurator) =>
+            config.AddConsumers(assemblies);
+            config.AddSagaStateMachines(assemblies);
+            config.AddSagas(assemblies);
+            config.AddActivities(assemblies);
+            
+            config.UsingRabbitMq((context, configurator) =>
             {
+                configurator.Host(new Uri(configuration["MessageBroker:Host"]!), host =>
+                {
+                    host.Username(configuration["MessageBroker:UserName"]!);
+                    host.Password(configuration["MessageBroker:Password"]!);
+                });
                 configurator.ConfigureEndpoints(context);
             });
+
         });
 
         return services;
