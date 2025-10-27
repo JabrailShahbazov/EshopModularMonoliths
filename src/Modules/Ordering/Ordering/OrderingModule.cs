@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ordering.Data;
+using Ordering.Data.Repository;
 using Shared.Data;
+using Shared.Data.Extensions;
 using Shared.Data.Interceptors;
 
 namespace Ordering;
@@ -24,6 +26,9 @@ public static class OrderingModule
             options.UseNpgsql(connectionString);
         });
 
+        // Register Repository and UnitOfWork using extension method
+        services.AddModuleRepositoryPattern<OrderingDbContext, IOrderingUnitOfWork, OrderingUnitOfWork>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
 
         return services;
     }

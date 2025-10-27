@@ -15,14 +15,14 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
     }
 }
 
-public class CreateProductHandle(CatalogDbContext dbContext) : ICommandHandler<CreateProductCommand, CreateProductResult>
+public class CreateProductHandle(ICatalogUnitOfWork unitOfWork) : ICommandHandler<CreateProductCommand, CreateProductResult>
 {
     public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
         var product = CreateNewProduct(command.Product);
         
-        dbContext.Products.Add(product);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await unitOfWork.Products.AddAsync(product, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         
         return new CreateProductResult(product.Id);
     }

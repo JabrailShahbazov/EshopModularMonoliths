@@ -17,18 +17,16 @@ public class CheckoutBasketCommandValidator : AbstractValidator<CheckoutBasketCo
     }
 }
 
-public class CheckoutBasketHandler(BasketDbContext dbContext)
+public class CheckoutBasketHandler(IBasketUnitOfWork unitOfWork)
     : ICommandHandler<CheckoutBasketCommand, CheckoutBasketResult>
 {
     public async Task<CheckoutBasketResult> Handle(CheckoutBasketCommand command, CancellationToken cancellationToken)
     {
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-
         try
         {
-            var basket = await dbContext.ShoppingCarts
-                .Include(x => x.Items)
-                .SingleOrDefaultAsync(x => x.UserName == command.BasketCheckout.UserName, cancellationToken);
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            var basket = await unitOfWork.Baskets.GetBasketByUserNameAsync(command.BasketCheckout.UserName, false, cancellationToken);
 
             if (basket == null)
             {
@@ -46,18 +44,18 @@ public class CheckoutBasketHandler(BasketDbContext dbContext)
                 OccurredOn = DateTime.UtcNow
             };
             
-            dbContext.OutboxMessages.Add(outboxMessage);
+            await unitOfWork.Outbox.AddAsync(outboxMessage, cancellationToken);
             
-            dbContext.ShoppingCarts.Remove(basket);
+            unitOfWork.Baskets.Remove(basket);
             
-            await dbContext.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
             
             return new CheckoutBasketResult(true);
         }
         catch
         {
-            await transaction.RollbackAsync(cancellationToken);
+            await unitOfWork.RollbackTransactionAsync();
             
             return new CheckoutBasketResult(false);
         }

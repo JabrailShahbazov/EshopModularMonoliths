@@ -1,43 +1,34 @@
-﻿namespace Basket.Data.Repository;
+﻿﻿using Microsoft.EntityFrameworkCore;
+using Shared.Data.Repository;
 
-public class BasketRepository(BasketDbContext dbContext) : IBasketRepository
+namespace Basket.Data.Repository;
+
+public class BasketRepository : Repository<ShoppingCart, BasketDbContext>, IBasketRepository
 {
-    public async Task<ShoppingCart> GetBasketAsync(string userName, bool asNoTracking = true, CancellationToken cancellationToken = default)
+    public BasketRepository(BasketDbContext context) : base(context)
     {
-        var query = dbContext.ShoppingCarts.Include(b => b.Items).Where(x => x.UserName == userName);
+    }
+
+    public async Task<ShoppingCart?> GetBasketByUserNameAsync(string userName, bool asNoTracking = true, CancellationToken cancellationToken = default)
+    {
+        var query = DbSet.Include(b => b.Items).Where(x => x.UserName == userName);
 
         if (asNoTracking)
         {
             query = query.AsNoTracking();
         }
 
-        var basket = await query.SingleOrDefaultAsync(cancellationToken);
-
-        return basket ?? throw new BasketNotFoundException(userName);
+        return await query.SingleOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<ShoppingCart> CreateBasketAsync(ShoppingCart basket, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteBasketByUserNameAsync(string userName, CancellationToken cancellationToken = default)
     {
-        dbContext.ShoppingCarts.Add(basket);
+        var basket = await GetBasketByUserNameAsync(userName, false, cancellationToken);
 
-        await  dbContext.SaveChangesAsync(cancellationToken);
+        if (basket == null)
+            return false;
 
-        return basket;
-    }
-
-    public async Task<bool> DeleteBasketAsync(string userName, CancellationToken cancellationToken = default)
-    {
-        var basket = await GetBasketAsync(userName, false, cancellationToken);
-
-        dbContext.ShoppingCarts.Remove(basket);
-
-        var result = await  dbContext.SaveChangesAsync(cancellationToken);
-
-        return result > 0;
-    }
-
-    public async Task<int> SaveChangesAsync(string? userName = null, CancellationToken cancellationToken = default)
-    {
-        return await dbContext.SaveChangesAsync(cancellationToken);
+        DbSet.Remove(basket);
+        return true;
     }
 }

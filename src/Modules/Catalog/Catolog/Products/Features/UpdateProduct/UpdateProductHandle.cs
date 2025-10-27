@@ -14,11 +14,11 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
     }
 }
 
-public class UpdateProductHandle(CatalogDbContext dbContext) : ICommandHandler<UpdateProductCommand, UpdateProductResult>
+public class UpdateProductHandle(ICatalogUnitOfWork unitOfWork) : ICommandHandler<UpdateProductCommand, UpdateProductResult>
 {
     public async Task<UpdateProductResult> Handle(UpdateProductCommand command, CancellationToken cancellationToken)
     {
-        var product = await dbContext.Products.FindAsync([command.Product.Id], cancellationToken);
+        var product = await unitOfWork.Products.GetByIdAsync(command.Product.Id, cancellationToken);
 
         if (product is null)
         {
@@ -27,8 +27,8 @@ public class UpdateProductHandle(CatalogDbContext dbContext) : ICommandHandler<U
         
         UpdateProductWithNewValues(command.Product, product);
         
-        dbContext.Products.Update(product);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        unitOfWork.Products.Update(product);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         
         return new UpdateProductResult(true);
     }

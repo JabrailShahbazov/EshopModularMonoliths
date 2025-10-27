@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using Catalog.Data.Repository;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Shared.Data;
+using Shared.Data.Extensions;
 
 namespace Catalog;
 
@@ -18,6 +21,10 @@ public static class CatalogModule
             options.AddInterceptors(sr.GetServices<ISaveChangesInterceptor>());
             options.UseNpgsql(connectionString);
         });
+
+        // Register Repository and UnitOfWork using extension method
+        services.AddModuleRepositoryPattern<CatalogDbContext, ICatalogUnitOfWork, CatalogUnitOfWork>();
+        services.AddScoped<IProductRepository, ProductRepository>();
         
         return services;
     }

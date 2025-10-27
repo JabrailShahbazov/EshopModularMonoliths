@@ -1,4 +1,6 @@
-﻿namespace Ordering.Orders.Features.CreateOrder;
+﻿﻿using Ordering.Data.Repository;
+
+namespace Ordering.Orders.Features.CreateOrder;
 
 public record CreateOrderCommand(OrderDto Order)
     : ICommand<CreateOrderResult>;
@@ -12,15 +14,15 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
     }
 }
 
-internal class CreateOrderHandler(OrderingDbContext dbContext)
+internal class CreateOrderHandler(IOrderingUnitOfWork unitOfWork)
     : ICommandHandler<CreateOrderCommand, CreateOrderResult>
 {
     public async Task<CreateOrderResult> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
         var order = CreateNewOrder(command.Order);
 
-        dbContext.Orders.Add(order);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await unitOfWork.Orders.AddAsync(order, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CreateOrderResult(order.Id);
     }

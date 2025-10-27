@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Basket.Data.JsonConverters;
 using Microsoft.Extensions.Caching.Distributed;
@@ -14,11 +15,11 @@ public class CachedBasketRepository(IBasketRepository basketRepository, IDistrib
         Converters = { new ShoppingCartConverter(), new ShoppingCartItemConverter() }
     };
     
-    public async Task<ShoppingCart> GetBasketAsync(string userName, bool asNoTracking = true, CancellationToken cancellationToken = default)
+    public async Task<ShoppingCart?> GetBasketByUserNameAsync(string userName, bool asNoTracking = true, CancellationToken cancellationToken = default)
     {
         if (!asNoTracking)
         {
-            return await basketRepository.GetBasketAsync(userName, false, cancellationToken);
+            return await basketRepository.GetBasketByUserNameAsync(userName, false, cancellationToken);
         }
 
         var cachedBasket = await cache.GetStringAsync(userName, cancellationToken);
@@ -33,26 +34,20 @@ public class CachedBasketRepository(IBasketRepository basketRepository, IDistrib
             }
         }
 
-        var basket = await basketRepository.GetBasketAsync(userName, asNoTracking, cancellationToken);
+        var basket = await basketRepository.GetBasketByUserNameAsync(userName, asNoTracking, cancellationToken);
 
-        await cache.SetStringAsync(userName, JsonSerializer.Serialize(basket, _options), cancellationToken);
-
-        return basket;
-    }
-
-    public async Task<ShoppingCart> CreateBasketAsync(ShoppingCart basket, CancellationToken cancellationToken = default)
-    {
-        await basketRepository.CreateBasketAsync(basket, cancellationToken);
-
-        await cache.SetStringAsync(basket.UserName, JsonSerializer.Serialize(basket, _options), cancellationToken);
+        if (basket != null)
+        {
+            await cache.SetStringAsync(userName, JsonSerializer.Serialize(basket, _options), cancellationToken);
+        }
 
         return basket;
     }
 
-    public async Task<bool> DeleteBasketAsync(string userName, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteBasketByUserNameAsync(string userName, CancellationToken cancellationToken = default)
     {
-        var result = await basketRepository.DeleteBasketAsync(userName, cancellationToken);
-
+        var result = await basketRepository.DeleteBasketByUserNameAsync(userName, cancellationToken);
+        
         if (result)
         {
             await cache.RemoveAsync(userName, cancellationToken);
@@ -61,15 +56,74 @@ public class CachedBasketRepository(IBasketRepository basketRepository, IDistrib
         return result;
     }
 
-    public async Task<int> SaveChangesAsync(string? userName = null, CancellationToken cancellationToken = default)
+    // Generic repository methods - delegate to underlying repository
+    public Task<ShoppingCart?> GetByIdAsync<TId>(TId id, CancellationToken cancellationToken = default)
     {
-        var result = await basketRepository.SaveChangesAsync(userName, cancellationToken);
-        
-        if (userName is not null)
-        {
-            await cache.RemoveAsync(userName, cancellationToken);
-        }
+        return basketRepository.GetByIdAsync(id, cancellationToken);
+    }
 
-        return result;
+    public Task<IEnumerable<ShoppingCart>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return basketRepository.GetAllAsync(cancellationToken);
+    }
+
+    public Task<IEnumerable<ShoppingCart>> FindAsync(Expression<Func<ShoppingCart, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        return basketRepository.FindAsync(predicate, cancellationToken);
+    }
+
+    public Task<ShoppingCart?> FirstOrDefaultAsync(Expression<Func<ShoppingCart, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        return basketRepository.FirstOrDefaultAsync(predicate, cancellationToken);
+    }
+
+    public Task<ShoppingCart?> SingleOrDefaultAsync(Expression<Func<ShoppingCart, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        return basketRepository.SingleOrDefaultAsync(predicate, cancellationToken);
+    }
+
+    public Task<bool> AnyAsync(Expression<Func<ShoppingCart, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        return basketRepository.AnyAsync(predicate, cancellationToken);
+    }
+
+    public Task<int> CountAsync(Expression<Func<ShoppingCart, bool>>? predicate = null, CancellationToken cancellationToken = default)
+    {
+        return basketRepository.CountAsync(predicate, cancellationToken);
+    }
+
+    public Task<ShoppingCart> AddAsync(ShoppingCart entity, CancellationToken cancellationToken = default)
+    {
+        return basketRepository.AddAsync(entity, cancellationToken);
+    }
+
+    public Task AddRangeAsync(IEnumerable<ShoppingCart> entities, CancellationToken cancellationToken = default)
+    {
+        return basketRepository.AddRangeAsync(entities, cancellationToken);
+    }
+
+    public void Update(ShoppingCart entity)
+    {
+        basketRepository.Update(entity);
+    }
+
+    public void UpdateRange(IEnumerable<ShoppingCart> entities)
+    {
+        basketRepository.UpdateRange(entities);
+    }
+
+    public void Remove(ShoppingCart entity)
+    {
+        basketRepository.Remove(entity);
+    }
+
+    public void RemoveRange(IEnumerable<ShoppingCart> entities)
+    {
+        basketRepository.RemoveRange(entities);
+    }
+
+    public IQueryable<ShoppingCart> AsQueryable()
+    {
+        return basketRepository.AsQueryable();
     }
 }

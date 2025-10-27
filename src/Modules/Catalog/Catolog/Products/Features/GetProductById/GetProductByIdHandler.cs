@@ -1,12 +1,10 @@
 ﻿namespace Catalog.Products.Features.GetProductById;
 
-public class GetProductByIdHandler(CatalogDbContext dbContext) : IQueryHandle<GetProductByIdQuery, GetProductByIdResult>
+public class GetProductByIdHandler(ICatalogUnitOfWork unitOfWork) : IQueryHandle<GetProductByIdQuery, GetProductByIdResult>
 {
     public async Task<GetProductByIdResult> Handle(GetProductByIdQuery query, CancellationToken cancellationToken)
     {
-        var product = await dbContext.Products
-                                     .AsNoTracking()
-                                     .SingleOrDefaultAsync(p => p.Id == query.Id, cancellationToken);
+        var product = await unitOfWork.Products.GetByIdAsync(query.Id, cancellationToken);
 
         if (product is null)
         {

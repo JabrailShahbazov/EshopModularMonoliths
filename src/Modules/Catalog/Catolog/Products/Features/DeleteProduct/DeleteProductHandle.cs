@@ -12,19 +12,20 @@ public class DeleteProductCommandValidator : AbstractValidator<DeleteProductComm
     }
 }
 
-public class DeleteProductHandle(CatalogDbContext dbContext) :ICommandHandler<DeleteProductCommand, DeleteProductResult>
+public class DeleteProductHandle(ICatalogUnitOfWork unitOfWork) :ICommandHandler<DeleteProductCommand, DeleteProductResult>
 {
     public async Task<DeleteProductResult> Handle(DeleteProductCommand command, CancellationToken cancellationToken)
     {
-        var product = await dbContext.Products.FindAsync([command], cancellationToken);
+        var product = await unitOfWork.Products.GetByIdAsync(command.ProductId, cancellationToken);
 
         if (product is null)
         {
             throw new ProductNotFoundException(command.ProductId);
         }
-        dbContext.Products.Remove(product);
         
-       await dbContext.SaveChangesAsync(cancellationToken);
+        unitOfWork.Products.Remove(product);
+        
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new DeleteProductResult(true);
     }

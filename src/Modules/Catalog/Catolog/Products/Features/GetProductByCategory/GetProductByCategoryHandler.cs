@@ -4,17 +4,17 @@ public record GetProductByCategoryQuery(string Category) : IQuery<GetProductByCa
 
 public record GetProductByCategoryResult(IEnumerable<ProductDto> Products);
 
-public class GetProductByCategoryHandler(CatalogDbContext dbContext) : IQueryHandle<GetProductByCategoryQuery, GetProductByCategoryResult>
+public class GetProductByCategoryHandler(ICatalogUnitOfWork unitOfWork) : IQueryHandle<GetProductByCategoryQuery, GetProductByCategoryResult>
 {
     public async Task<GetProductByCategoryResult> Handle(GetProductByCategoryQuery query, CancellationToken cancellationToken)
     {
-        var products = await dbContext.Products
-                                      .AsNoTracking()
-                                      .Where(p => p.Category.Contains(query.Category))
-                                      .OrderBy(p => p.Name)
-                                      .ToListAsync(cancellationToken);
+        var (products, _) = await unitOfWork.Products.GetProductsByCategoryAsync(
+            query.Category,
+            pageIndex: 0,
+            pageSize: int.MaxValue,
+            cancellationToken);
         
-        var productDtos = products.Adapt<List<ProductDto>>();
+        var productDtos = products.ToList().Adapt<List<ProductDto>>();
 
         return new GetProductByCategoryResult(productDtos);
     }

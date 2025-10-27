@@ -1,5 +1,7 @@
 ﻿using Basket.Data.Processors;
+using Basket.Data.Repository;
 using Shared.Data;
+using Shared.Data.Extensions;
 
 namespace Basket;
 
@@ -17,6 +19,11 @@ public static class BasketModule
             options.AddInterceptors(sr.GetServices<ISaveChangesInterceptor>());
             options.UseNpgsql(connectionString);
         });
+
+        // Register Repository and UnitOfWork using extension method
+        services.AddModuleRepositoryPattern<BasketDbContext, IBasketUnitOfWork, BasketUnitOfWork>();
+        services.AddScoped<IBasketRepository, BasketRepository>();
+        services.AddScoped<IOutboxRepository, OutboxRepository>();
 
         services.AddHostedService<OutboxProcessor>();
         

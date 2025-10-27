@@ -23,3 +23,4 @@ global using Catalog.Products.Exceptions;
 global using Shared.Pagination;
 global using Catalog.Contracts.Products.Features.GetProductById;
 global using Catalog.Contracts.Products.Dtos;
+global using Catalog.Data.Repository;

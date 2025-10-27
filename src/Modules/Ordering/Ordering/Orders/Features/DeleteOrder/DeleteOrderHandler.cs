@@ -1,4 +1,6 @@
-﻿namespace Ordering.Orders.Features.DeleteOrder;
+﻿﻿using Ordering.Data.Repository;
+
+namespace Ordering.Orders.Features.DeleteOrder;
 
 public record DeleteOrderCommand(Guid OrderId)
     : ICommand<DeleteOrderResult>;
@@ -11,21 +13,21 @@ public class DeleteOrderCommandValidator : AbstractValidator<DeleteOrderCommand>
     }
 }
 
-internal class DeleteOrderHandler(OrderingDbContext dbContext)
+internal class DeleteOrderHandler(IOrderingUnitOfWork unitOfWork)
     : ICommandHandler<DeleteOrderCommand, DeleteOrderResult>
 {
     public async Task<DeleteOrderResult> Handle(DeleteOrderCommand command, CancellationToken cancellationToken)
     {
-        var order = await dbContext.Orders
-           .FindAsync([command.OrderId], cancellationToken: cancellationToken);
+        var order = await unitOfWork.Orders.GetByIdAsync(command.OrderId, cancellationToken);
 
         if (order is null)
         {
             throw new OrderNotFoundException(command.OrderId);
         }
 
-        dbContext.Orders.Remove(order);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        unitOfWork.Orders.Remove(order);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        
         return new DeleteOrderResult(true);
     }
 }
