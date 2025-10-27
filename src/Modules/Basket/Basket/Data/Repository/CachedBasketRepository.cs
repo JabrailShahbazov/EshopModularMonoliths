@@ -56,7 +56,54 @@ public class CachedBasketRepository(IBasketRepository basketRepository, IDistrib
         return result;
     }
 
-    // Generic repository methods - delegate to underlying repository
+    // Generic repository methods - delegate to underlying repository with cache management
+    public async Task<ShoppingCart> AddAsync(ShoppingCart entity, CancellationToken cancellationToken = default)
+    {
+        var result = await basketRepository.AddAsync(entity, cancellationToken);
+        await cache.SetStringAsync(entity.UserName, JsonSerializer.Serialize(result, _options), cancellationToken);
+        return result;
+    }
+
+    public async Task AddRangeAsync(IEnumerable<ShoppingCart> entities, CancellationToken cancellationToken = default)
+    {
+        var list = entities.ToList();
+        await basketRepository.AddRangeAsync(list, cancellationToken);
+        foreach (var e in list)
+        {
+            await cache.SetStringAsync(e.UserName, JsonSerializer.Serialize(e, _options), cancellationToken);
+        }
+    }
+
+    public void Update(ShoppingCart entity)
+    {
+        basketRepository.Update(entity);
+        _ = cache.RemoveAsync(entity.UserName); // fire-and-forget invalidation
+    }
+
+    public void UpdateRange(IEnumerable<ShoppingCart> entities)
+    {
+        basketRepository.UpdateRange(entities);
+        foreach (var e in entities)
+        {
+            _ = cache.RemoveAsync(e.UserName);
+        }
+    }
+
+    public void Remove(ShoppingCart entity)
+    {
+        basketRepository.Remove(entity);
+        _ = cache.RemoveAsync(entity.UserName);
+    }
+
+    public void RemoveRange(IEnumerable<ShoppingCart> entities)
+    {
+        basketRepository.RemoveRange(entities);
+        foreach (var e in entities)
+        {
+            _ = cache.RemoveAsync(e.UserName);
+        }
+    }
+
     public Task<ShoppingCart?> GetByIdAsync<TId>(TId id, CancellationToken cancellationToken = default)
     {
         return basketRepository.GetByIdAsync(id, cancellationToken);
@@ -90,36 +137,6 @@ public class CachedBasketRepository(IBasketRepository basketRepository, IDistrib
     public Task<int> CountAsync(Expression<Func<ShoppingCart, bool>>? predicate = null, CancellationToken cancellationToken = default)
     {
         return basketRepository.CountAsync(predicate, cancellationToken);
-    }
-
-    public Task<ShoppingCart> AddAsync(ShoppingCart entity, CancellationToken cancellationToken = default)
-    {
-        return basketRepository.AddAsync(entity, cancellationToken);
-    }
-
-    public Task AddRangeAsync(IEnumerable<ShoppingCart> entities, CancellationToken cancellationToken = default)
-    {
-        return basketRepository.AddRangeAsync(entities, cancellationToken);
-    }
-
-    public void Update(ShoppingCart entity)
-    {
-        basketRepository.Update(entity);
-    }
-
-    public void UpdateRange(IEnumerable<ShoppingCart> entities)
-    {
-        basketRepository.UpdateRange(entities);
-    }
-
-    public void Remove(ShoppingCart entity)
-    {
-        basketRepository.Remove(entity);
-    }
-
-    public void RemoveRange(IEnumerable<ShoppingCart> entities)
-    {
-        basketRepository.RemoveRange(entities);
     }
 
     public IQueryable<ShoppingCart> AsQueryable()

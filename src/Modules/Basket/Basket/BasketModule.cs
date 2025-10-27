@@ -21,9 +21,7 @@ public static class BasketModule
         });
 
         // Register Repository and UnitOfWork using extension method
-        services.AddModuleRepositoryPattern<BasketDbContext, IBasketUnitOfWork, BasketUnitOfWork>();
-        services.AddScoped<IBasketRepository, BasketRepository>();
-        services.AddScoped<IOutboxRepository, OutboxRepository>();
+   
 
         services.AddHostedService<OutboxProcessor>();
         

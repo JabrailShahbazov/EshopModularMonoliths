@@ -8,15 +8,15 @@ namespace Basket.Data.Repository;
 /// </summary>
 public class BasketUnitOfWork : UnitOfWork<BasketDbContext>, IBasketUnitOfWork
 {
-    private readonly BasketDbContext _context;
-    private IBasketRepository? _basketRepository;
-    private IOutboxRepository? _outboxRepository;
+    public IBasketRepository Baskets { get; }
+    public IOutboxRepository Outbox { get; }
 
-    public BasketUnitOfWork(BasketDbContext context) : base(context)
+    public BasketUnitOfWork(
+        BasketDbContext context,
+        IBasketRepository baskets,
+        IOutboxRepository outbox) : base(context)
     {
-        _context = context;
+        Baskets = baskets;
+        Outbox = outbox;
     }
-
-    public IBasketRepository Baskets => _basketRepository ??= new BasketRepository(_context);
-    public IOutboxRepository Outbox => _outboxRepository ??= new OutboxRepository(_context);
 }
